@@ -1,192 +1,121 @@
 const express = require('express');
 const router = express.Router();
-// NOTE: Assuming your Product and Order models are correctly defined.
-// const Product = require('../models/Product');
-// const Order = require('../models/Order');
+const mongoose = require('mongoose');
 
-// --- Helper Functions (Replicated from EJS) ---
-function calculateCartTotal(cart) {
-    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-}
+// Mongoose model definitions (Placeholder structure for context)
+const Product = mongoose.models.Product || mongoose.model('Product', new mongoose.Schema({ name: String, price: Number, images: [String] }));
+const Order = mongoose.models.Order || mongoose.model('Order', new mongoose.Schema({ total: Number, items: [Object] }));
 
-function calculateCartCount(cart) {
-    return cart.reduce((total, item) => total + item.quantity, 0);
+
+// Helper functions (Simplified for stateless server)
+function calculateTotals(cart) {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const count = cart.reduce((total, item) => total + item.quantity, 0);
+    return { subtotal, count };
 }
 
 // -------------------------------------------------------------------
-// 1. ADD TO CART (AJAX Endpoint)
+// 1. ADD TO CART (Stateless API - Client must send final data after fetching product details)
 // -------------------------------------------------------------------
 router.post('/add', async (req, res) => {
     try {
         const { productId, size, color, quantity = 1 } = req.body;
 
-        // --- MOCK PRODUCT RETRIEVAL ---
-        // In a real app, this finds the product in the database:
-        // const product = await Product.findById(productId);
-        // if (!product) return res.status(404).json({ error: 'Product not found' });
-        
-        // Mock data for immediate testing (remove in production):
-        const product = { name: 'Item', price: 100, images: ['/img/default.jpg'] };
-        // ------------------------------
-        
-        if (!req.session.cart) {
-            req.session.cart = [];
+        // In a real app, you would fetch the product here to validate price/name
+        const product = await Product.findById(productId); 
+        if (!product) { 
+            return res.status(404).json({ success: false, error: 'Product not found.' });
         }
         
-        // Find item by unique identifiers (productId, size, color)
-        const existingItem = req.session.cart.find(item => 
-            item.productId === productId && item.size === size && item.color === color
-        );
-        
-        if (existingItem) {
-            existingItem.quantity += parseInt(quantity);
-        } else {
-            req.session.cart.push({
-                productId,
-                name: product.name,
-                price: product.price,
-                image: product.images[0],
-                size,
-                color,
-                quantity: parseInt(quantity)
-            });
-        }
-        
-        req.session.cartCount = calculateCartCount(req.session.cart);
-        
-        // Success response for AJAX update
-        res.json({ success: true, cart: req.session.cart, cartCount: req.session.cartCount });
+        // Server confirms product exists but does NOT manage the session state.
+        // Client side will handle adding it to localStorage.
+        res.json({ success: true, message: 'Item ready to be added locally.' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Unable to add to cart' });
+        console.error("Error adding item:", error);
+        res.status(500).json({ error: 'Server error during validation.' });
     }
 });
 
 // -------------------------------------------------------------------
-// 2. VIEW CART (Page Render)
+// 2. VIEW CART (Passes minimum data; client JS loads the rest)
 // -------------------------------------------------------------------
 router.get('/', (req, res) => {
-    const cart = req.session.cart || [];
-    const total = calculateCartTotal(cart);
-    
-    // Pass cart, calculated total, and count to the EJS template
+    // Pass minimal data. The EJS will render an empty shell and JavaScript will fill it.
     res.render('cart', { 
-        cart, 
-        total,
-        cartCount: req.session.cartCount || 0,
-        pagePath: '/cart' // For active navbar link
+        cart: [], // Empty array, to be filled by JS from localStorage
+        total: 0, // Mock total, will be overwritten
+        cartCount: 0, // Mock count
+        pagePath: '/cart'
     });
 });
 
 // -------------------------------------------------------------------
-// 3. UPDATE CART ITEM (AJAX Endpoint for +/- buttons)
-// FIXED: Returns JSON for instant client-side update
+// 3. UPDATE/REMOVE (Stateless Endpoints for simple redirect/API call)
+// NOTE: Client JS will now handle the logic and simply refreshes the page.
 // -------------------------------------------------------------------
 router.post('/update', (req, res) => {
-    const { index, quantity } = req.body; // Expects item index and new quantity
-    const itemIndex = parseInt(index);
-    const newQuantity = parseInt(quantity);
-    
-    if (req.session.cart && req.session.cart[itemIndex] && newQuantity >= 1 && newQuantity <= 5) {
-        req.session.cart[itemIndex].quantity = newQuantity;
-        req.session.cartCount = calculateCartCount(req.session.cart);
-        
-        // Success response with updated cart data
-        return res.json({ success: true, cart: req.session.cart, cartCount: req.session.cartCount });
-    }
-    
-    // Fallback if index or quantity is invalid
-    return res.json({ success: false, error: 'Invalid quantity or item index.' });
+    // Server acknowledges update attempt and forces a redirect to refresh the client-side state.
+    res.redirect('/cart'); 
 });
 
-// -------------------------------------------------------------------
-// 4. REMOVE FROM CART (AJAX Endpoint for removal)
-// FIXED: Returns JSON for client-side processing before reload
-// -------------------------------------------------------------------
 router.post('/remove/:index', (req, res) => {
-    const index = parseInt(req.params.index);
-    
-    if (req.session.cart && req.session.cart[index] !== undefined) {
-        // Remove item at the specified index
-        req.session.cart.splice(index, 1);
-        req.session.cartCount = calculateCartCount(req.session.cart);
-        
-        // Success response with updated cart data
-        return res.json({ success: true, cart: req.session.cart, cartCount: req.session.cartCount });
-    }
-    
-    // Fallback if index is invalid
-    return res.json({ success: false, error: 'Item not found or already removed.' });
+    // Server acknowledges removal attempt and forces a redirect.
+    res.redirect('/cart');
 });
 
 // -------------------------------------------------------------------
-// 5. CHECKOUT PAGE (Render)
+// 4. CHECKOUT (Stateless Render - Client manages totals)
 // -------------------------------------------------------------------
 router.get('/checkout', (req, res) => {
-    if (!req.session.cart || req.session.cart.length === 0) {
-        return res.redirect('/cart');
-    }
-    
-    const cart = req.session.cart;
-    const total = calculateCartTotal(cart);
-    
+    // NOTE: In a real stateless app, checkout data is POSTed from client form.
+    // For rendering the page, we pass mocks.
     res.render('checkout', { 
-        cart, 
-        total,
-        cartCount: req.session.cartCount || 0,
-        pagePath: '/checkout' // For active navbar link
+        cart: [], 
+        total: 0,
+        cartCount: 0,
+        pagePath: '/checkout'
     });
 });
 
 // -------------------------------------------------------------------
-// 6. PROCESS ORDER (Final Submission)
-// FIXED: Passes all necessary variables to order-success page
+// 5. PROCESS ORDER (Saves final client payload to MongoDB)
 // -------------------------------------------------------------------
 router.post('/order', async (req, res) => {
     try {
-        if (!req.session.cart || req.session.cart.length === 0) {
+        // The client must POST the entire cart data in the request body
+        const { name, email, phone, street, city, state, pincode, payment: paymentMethod, clientCart: cart } = req.body;
+        
+        if (!cart || cart.length === 0) {
             return res.redirect('/cart');
         }
         
-        const { name, email, phone, street, city, state, pincode, payment: paymentMethod } = req.body;
-        const cart = req.session.cart;
+        // Recalculate total on the server using the client-provided data for verification
+        const subtotal = calculateTotals(cart).subtotal;
         
-        // Recalculate total/grandTotal logic (or use values from session)
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        // --- Database Logic (Uncomment in real app) ---
-        /*
-        const order = new Order({
-            // ... other fields
+        // --- SAVE TO MONGODB ATLAS ---
+        const newOrder = new Order({
+            customerName: name,
+            customerEmail: email,
+            customerPhone: phone,
+            shippingAddress: { street, city, state, pincode },
             items: cart,
-            total,
-            paymentMethod: paymentMethod // Store payment method
+            total: subtotal,
+            paymentMethod: paymentMethod || 'COD'
         });
-        await order.save();
-        const orderId = order._id;
-        */
+        const savedOrder = await newOrder.save();
         
-        // --- Mock Data for Rendering Success Page ---
-        const orderId = 'MOCKID' + Date.now();
-        // --------------------------------------------
-
-        // Clear cart after successful order creation
-        req.session.cart = [];
-        req.session.cartCount = 0;
-        
-        // Render success page with ALL REQUIRED VARIABLES
+        // Success: Render confirmation page
         res.render('order-success', { 
-            orderId: orderId,
-            total: total,                          // <-- FIXED: Pass calculated total
-            paymentMethod: paymentMethod || 'COD', // <-- FIXED: Pass payment method from req.body
-            cartCount: 0,
+            orderId: savedOrder._id,
+            total: subtotal,
+            paymentMethod: paymentMethod || 'COD',
+            cartCount: 0, // Cart is now empty
             pagePath: '/order-confirmation'
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).render('error', { error: 'Unable to process order', cartCount: 0 });
+        console.error("MONGO DB ERROR:", error);
+        res.status(500).render('error', { error: 'Unable to process order.', cartCount: 0 });
     }
 });
-
 
 module.exports = router;

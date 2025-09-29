@@ -124,7 +124,7 @@
 
     /* Non-disruptive Toast Message Styling */
     #cart-message {
-       display: none; /* Removed, as simple forms don't support this easily */
+       display: none; 
     }
 </style>
 
@@ -154,7 +154,7 @@
                             <div class="card-body">
                                 <div class="row align-items-center g-2 g-md-4">
                                     <div class="col-4 col-md-2">
-                                        <img src="<%= item.image %>" class="img-fluid rounded item-image" alt="<%= item.name %>">
+                                        <img src="<%= item.image || '/images/default_fallback.jpg' %>" class="img-fluid rounded item-image" alt="<%= item.name %>">
                                     </div>
                                     
                                     <div class="col-8 col-md-4">
@@ -325,4 +325,3 @@ function submitQuantityForm(index, newQuantity) {
     form.submit(); // This triggers the POST request and subsequent page reload.
 }
 </script>
-
