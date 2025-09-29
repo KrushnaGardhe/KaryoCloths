@@ -1,8 +1,7 @@
 <% layout('layout') %>
 <% 
-    // --- FIX: CALCULATIONS MOVED TO TOP ---
+    // --- CALCULATIONS MOVED TO TOP ---
     // These variables must be calculated and defined before their first use below.
-    // NOTE: This assumes 'cart' is passed by the Express route.
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryCost = total >= 999 ? 0 : 99;
     const grandTotal = total + deliveryCost;
@@ -13,7 +12,6 @@
     :root {
         --karyo-primary: #007bff;
         --karyo-success: #28a745;
-        --karyo-danger: #dc3545;
     }
 
     /* Checkout Progress Steps */
@@ -151,6 +149,7 @@
                         <h5 class="mb-0">Payment Method</h5>
                     </div>
                     <div class="card-body">
+                        <!-- COD -->
                         <div class="form-check mb-3 border-bottom pb-2">
                             <input class="form-check-input" type="radio" name="payment" id="cod" value="cod" checked>
                             <label class="form-check-label" for="cod">
@@ -166,15 +165,20 @@
                     </div>
                 </div>
 
+                <!-- Terms & Desktop Actions -->
                 <div class="mb-4">
+                    <!-- FIX: Simplified label structure to encourage single line flow on mobile -->
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" id="terms" required>
-                        <label class="form-check-label" for="terms">
-                            I agree to the <a href="#" class="text-decoration-none">Terms & Conditions</a> and 
-                            <a href="#" class="text-decoration-none">Privacy Policy</a>
+                        <label class="form-check-label small" for="terms">
+                            I agree to the 
+                            <a href="#" class="text-primary text-decoration-none">Terms & Conditions</a> 
+                            and 
+                            <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>
                         </label>
                     </div>
 
+                    <!-- Desktop Actions -->
                     <div class="d-flex gap-3 desktop-checkout-actions">
                         <a href="/cart" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> Back to Cart
@@ -187,6 +191,7 @@
             </form>
         </div>
 
+        <!-- Order Summary (Sticky on Desktop) -->
         <div class="col-md-4">
             <div class="sticky-summary" style="top: 20px;">
                 <div class="card border-0 shadow-sm mb-3">
@@ -194,6 +199,7 @@
                         <h5 class="mb-0">Order Summary</h5>
                     </div>
                     <div class="card-body">
+                        <!-- Item List Preview -->
                         <% cart.forEach(item => { %>
                             <div class="d-flex justify-content-between mb-2 small">
                                 <div class="text-truncate" style="max-width: 70%;">
@@ -205,6 +211,7 @@
                         
                         <hr>
                         
+                        <!-- Totals -->
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal</span>
                             <span>₹<%= total %></span>
@@ -239,6 +246,7 @@
     </div>
 </div>
 
+<!-- STICKY MOBILE ACTION BAR -->
 <div class="mobile-action-bar">
     <div class="d-flex flex-column text-start me-3">
         <span class="text-muted small">Total Payable:</span>
