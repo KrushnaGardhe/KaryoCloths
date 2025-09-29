@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" href="/favicon.ico?v=1.0" type="image/x-icon">
+    <title>Karyo - Fashion in 2 Hours</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --karyo-primary: #007bff; /* Primary Blue for brand and active states */
+            --karyo-success: #28a745; /* Green for quick actions/delivery */
+            --karyo-text-muted: #6c757d;
+        }
+
+        /* 1. Condensed Top Header (Sticky) */
+        .navbar {
+            padding: 0.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            background-color: white !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700 !important;
+        }
+        
+        /* 2. Sticky Bottom Navigation (Mobile Only) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+            display: none; /* Hidden by default */
+            height: 60px; /* Explicit height for calculation */
+        }
+        
+        /* --- MOBILE SPECIFIC RULES --- */
+        @media (max-width: 991.98px) {
+            /* Show the bottom nav on mobile */
+            .bottom-nav {
+                display: flex;
+            }
+            
+            /* Hide the footer completely on mobile screens */
+            .main-footer {
+                display: none !important;
+            }
+
+            /* Push main content up to ensure there's NO visible gap */
+            main {
+                /* Padding only needs to clear the bottom-nav (60px) */
+                padding-bottom: 60px; 
+            }
+        }
+
+        /* --- DESKTOP/GENERAL RULES --- */
+        .nav-item-bottom {
+            flex: 1;
+            text-align: center;
+            font-size: 0.75rem;
+            transition: color 0.15s ease;
+            color: var(--karyo-text-muted);
+            text-decoration: none;
+        }
+        .nav-item-bottom i {
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        /* Active Link Color Effect */
+        .nav-item-bottom.active {
+            color: var(--karyo-primary) !important; 
+        }
+        .nav-item-bottom:hover {
+            color: var(--karyo-primary) !important;
+        }
+
+        /* Footer Compactness for Desktop */
+        .main-footer {
+            position: relative;
+            z-index: 1000;
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+        }
+    </style>
+
+    <meta name="description" content="Karyo - Premium quality clothing with lightning-fast delivery (2 Hours in select cities). 100% authentic.">
+    
+    <% 
+        // EJS Logic: Checks the 'pagePath' variable passed from the Express route to set the 'active' class.
+        const currentPath = (typeof pagePath !== 'undefined') ? pagePath : '/'; 
+        const actualCartCount = (typeof cartCount !== 'undefined') ? cartCount : 0; 
+    %>
+</head>
+<body>
+    
+    <nav class="navbar navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand text-primary" href="/">
+                <img src="favicon.ico" alt="Karyo Logo" width="30" height="30" class="d-inline-block align-text-top me-2">KARYO
+            </a>
+            
+            <div class="d-none d-lg-flex align-items-center">
+                <a class="text-decoration-none me-3 text-dark" href="/">Home</a>
+                <a class="text-decoration-none me-3 text-dark" href="/shop">Shop</a>
+                <a class="text-decoration-none text-dark" href="/contact">Contact</a>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <a href="/cart" class="btn btn-sm btn-outline-success position-relative">
+                    <i class="bi bi-bag"></i>
+                    <% if (actualCartCount > 0) { %>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <%= actualCartCount %>
+                        </span>
+                    <% } %>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <main >
+        <%- body %>
+    </main>
+
+    <div class="bottom-nav d-lg-none">
+        <div class="container d-flex justify-content-around">
+            
+            <a href="/" class="nav-item-bottom <%= currentPath === '/' ? 'active' : '' %>">
+                <i class="bi bi-house-door-fill"></i> Home
+            </a>
+            
+            <a href="/shop" class="nav-item-bottom <%= currentPath.startsWith('/shop') ? 'active' : '' %>">
+                <i class="bi bi-grid-3x3-gap"></i> Shop
+            </a>
+            
+            <a href="/cart" class="nav-item-bottom position-relative <%= currentPath === '/cart' ? 'active' : '' %>">
+                <i class="bi bi-bag"></i> Cart
+                <% if (actualCartCount > 0) { %>
+                    <span class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 0.5rem; right: 25%; font-size: 0.6rem;">
+                        <%= actualCartCount %>
+                    </span>
+                <% } %>
+            </a>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white pb-3 main-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-6 col-md-4 mb-3">
+                    <h5 class="fw-bold text-success">KARYO</h5>
+                    <p class="mb-2" style="font-size: 0.8rem;">Your trusted source for 2-Day fashion delivery.</p>
+                </div>
+                
+                <div class="col-6 col-md-4 mb-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mb-0" style="font-size: 0.8rem;">
+                        <li><a href="/shop" class="text-light text-decoration-none">Shop All</a></li>
+                        <li><a href="/about" class="text-light text-decoration-none">About Us</a></li>
+                        <li><a href="/contact" class="text-light text-decoration-none">Contact</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Return Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="my-3 border-secondary">
+            
+            <div class="row align-items-center">
+                <div class="col-12 text-center">
+                    <small style="font-size: 0.7rem;">&copy; 2024 Karyo. All rights reserved.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

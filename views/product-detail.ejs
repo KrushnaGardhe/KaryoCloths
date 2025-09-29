@@ -1,0 +1,496 @@
+<% layout('layout') %>
+<style>
+    /* Custom Styles for Best Quick-Commerce PDP & Image Display */
+    :root {
+        --karyo-primary: #007bff;
+        --karyo-speed: #28a745; /* Green for success/purchase */
+        --karyo-urgency: #ffc107;
+    }
+
+    /* Product Details & Typography */
+    .product-details h1 {
+        font-size: 1.75rem;
+    }
+    .price-section h2 {
+        font-size: 2rem;
+        color: var(--karyo-speed) !important; 
+        font-weight: 900;
+    }
+
+    /* --- Selection & Quantity --- */
+    .btn-group .btn {
+        font-size: 0.9rem;
+        padding: 0.375rem 0.75rem;
+    }
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--karyo-primary);
+        color: white;
+    }
+
+    /* Dominant Add to Cart Button Styling */
+    .btn-quick-add {
+        background-color: var(--karyo-speed) !important;
+        border-color: var(--karyo-speed) !important;
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+    .btn-quick-add:hover {
+        background-color: #1e7e34 !important;
+        border-color: #1e7e34 !important;
+    }
+    .btn-quick-add.btn-success {
+        background-color: #1c7430 !important;
+    }
+
+    /* Color Swatch Styling */
+    .color-swatch-label {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        cursor: pointer;
+        display: inline-block;
+        border: 2px solid #ccc;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .btn-check:checked + .color-swatch-label {
+        border-color: var(--karyo-primary);
+        box-shadow: 0 0 0 2px var(--karyo-primary);
+    }
+    
+    /* --- FLOATING ACTION BAR --- */
+    .floating-action-bar {
+        position: fixed;
+        bottom: 60px; /* Sits 60px above the bottom, clearing the navbar */
+        left: 0;
+        right: 0;
+        background: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1040; 
+        padding: 0.75rem 1rem;
+        display: none;
+        border-top: 1px solid #eee;
+    }
+    
+    /* Ensure visibility only on mobile and push content up */
+    @media (max-width: 991.98px) {
+        .floating-action-bar {
+            display: block;
+        }
+        .container.py-4, .container.py-5 {
+             padding-bottom: 120px !important; 
+        }
+    }
+    
+    /* Hide the primary CTA button on mobile, as the floating bar handles it */
+    @media (max-width: 991.98px) {
+        .main-cta-desktop {
+            display: none !important;
+        }
+    }
+    @media (min-width: 992px) {
+        .floating-action-bar {
+            display: none;
+        }
+    }
+
+    /* --- IMAGE GALLERY STYLES --- */
+    .main-product-image {
+        width: 100%;
+        height: 400px; /* Fixed height for consistency */
+        object-fit: cover;
+        cursor: zoom-in; /* Indicate it's clickable */
+    }
+    .thumbnail-gallery {
+        display: flex;
+        gap: 0.5rem; /* Spacing between thumbnails */
+        overflow-x: auto; /* Scrollable on smaller screens */
+        padding-bottom: 5px; /* Space for scrollbar */
+        white-space: nowrap; /* Prevent wrapping */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+    .thumbnail-gallery::-webkit-scrollbar {
+        height: 6px;
+    }
+    .thumbnail-gallery::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+    .thumbnail-gallery::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+    }
+
+    .thumbnail-img {
+        width: 80px; /* Fixed width */
+        height: 80px; /* Fixed height */
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.2s, transform 0.1s;
+        flex-shrink: 0; /* Prevent shrinking */
+    }
+    .thumbnail-img.active, .thumbnail-img:hover {
+        border-color: var(--karyo-primary);
+        transform: scale(1.02);
+    }
+
+    /* Lightbox Styles */
+    #lightbox-modal .modal-content {
+        background: transparent;
+        border: none;
+    }
+    #lightbox-modal .modal-body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+    }
+    #lightbox-modal .modal-body img {
+        max-width: 100%;
+        max-height: 90vh; /* Don't cover entire viewport */
+        object-fit: contain; /* Show entire image */
+        border-radius: 0.5rem;
+    }
+    #lightbox-modal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%); /* White close button */
+        opacity: 1;
+    }
+</style>
+
+<div class="container py-4 py-md-5">
+    <div class="row">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="product-images sticky-top pt-md-4" style="top: 70px;"> 
+                <img src="<%= product.images[0] %>" class="img-fluid rounded-3 shadow-sm mb-3 main-product-image" 
+                     alt="<%= product.name %>" id="main-image" data-bs-toggle="modal" data-bs-target="#lightbox-modal">
+                
+                <% if (product.images.length > 1) { %>
+                    <div class="thumbnail-gallery">
+                        <% product.images.forEach((image, index) => { %>
+                            <img src="<%= image %>" class="thumbnail-img border rounded-3 <%= index === 0 ? 'active' : '' %>" 
+                                data-fullsrc="<%= image %>"
+                                onclick="changeMainImage('<%= image %>', this)" 
+                                alt="Product view <%= index + 1 %>">
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="product-details">
+                <div class="mb-2">
+                    <% if (product.discount > 0) { %>
+                        <span class="badge bg-danger me-2"><%= product.discount %>% OFF</span>
+                    <% } %>
+                    <span class="badge bg-success me-2"><i class="bi bi-lightning-fill"></i> 2 DAY Delivery</span>
+                    <span class="badge bg-warning text-dark">🔥 Trending</span>
+                </div>
+
+                <h1 class="fw-bold mb-2"><%= product.name %></h1>
+                
+                <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                    <div class="stars text-warning me-2">
+                        <% for(let i = 0; i < Math.floor(product.rating); i++) { %>⭐<% } %>
+                    </div>
+                    <span class="fw-bold me-2"><%= product.rating %></span>
+                    <span class="text-muted small">(<%= product.reviews %> reviews)</span>
+                </div>
+                
+                <div class="price-section mb-4 p-3 bg-light rounded-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fw-bolder mb-1">₹<%= product.price %></h2>
+                            <% if (product.originalPrice) { %>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-muted small"><del>₹<%= product.originalPrice %></del></span>
+                                    <span class="badge bg-success">Save ₹<%= product.originalPrice - product.price %></span>
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="text-center text-danger fw-bold small">
+                            <i class="bi bi-fire"></i> LOW STOCK!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="selection-group mb-4">
+                    <% if (product.sizes && product.sizes.length > 0) { %>
+                        <div class="mb-3">
+                            <h6 class="fw-semibold">Select Size:</h6>
+                            <div class="btn-group" role="group" id="size-selection">
+                                <% product.sizes.forEach((size, index) => { %>
+                                    <input type="radio" class="btn-check" name="size" id="size-<%= index %>" value="<%= size %>" <%= index === 0 ? 'checked' : '' %>>
+                                    <label class="btn btn-outline-primary" for="size-<%= index %>"><%= size %></label>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <% if (product.colors && product.colors.length > 0) { %>
+                        <div class="mb-3">
+                            <h6 class="fw-semibold">Select Color:</h6>
+                            <div id="color-selection">
+                                <% product.colors.forEach((color, index) => { %>
+                                    <% const colorValue = color.toLowerCase().replace(/\s/g, ''); %>
+                                    <input type="radio" class="btn-check" name="color" id="color-<%= index %>" value="<%= color %>" <%= index === 0 ? 'checked' : '' %>>
+                                    <label class="color-swatch-label" for="color-<%= index %>" style="background-color: <%= colorValue %>;" title="<%= color %>"></label>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div>
+                        <h6 class="fw-semibold">Quantity:</h6>
+                        <div class="input-group" style="width: 150px;">
+                            <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(-1)">-</button>
+                            <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="5">
+                            <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mb-4 main-cta-desktop">
+                    <button id="desktop-add-to-cart-btn" class="btn btn-quick-add btn-lg" onclick="addToCart()">
+                        <i class="bi bi-bag-plus"></i> Add to Cart 
+                    </button>
+                    <small class="text-muted text-center">
+                        <i class="bi bi-truck text-success"></i> Free Delivery on orders above ₹999
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold border-bottom pb-2 mb-3">Product Description</h5>
+                    <p class="text-muted"><%= product.description %></p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold border-bottom pb-2 mb-3">Guaranteed Quality & Service</h5>
+                    <div class="row text-center g-3">
+                        <div class="col-6 col-md-3">
+                            <i class="bi bi-award display-6 text-primary"></i>
+                            <h6 class="mt-2 fw-bold">Premium Quality</h6>
+                            <small class="text-muted">Finest materials used</small>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <i class="bi bi-lightning-fill display-6 text-success"></i>
+                            <h6 class="mt-2 fw-bold">2-4 Hr Delivery</h6>
+                            <small class="text-muted">Same day in major cities</small>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <i class="bi bi-arrow-repeat display-6 text-warning"></i>
+                            <h6 class="mt-2 fw-bold">7 Day Return</h6>
+                            <small class="text-muted">Hassle-free guarantee</small>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <i class="bi bi-shield-check display-6 text-info"></i>
+                            <h6 class="mt-2 fw-bold">100% Authentic</h6>
+                            <small class="text-muted">Trusted products only</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <% if (relatedProducts && relatedProducts.length > 0) { %>
+        <div class="mt-5">
+            <h3 class="fw-bold mb-4">You Might Also Like</h3>
+            <div class="row row-cols-2 row-cols-md-4 g-3">
+                <% relatedProducts.slice(0, 4).forEach(relatedProduct => { %>
+                    <div class="col">
+                        <a href="/products/<%= relatedProduct._id %>" class="text-decoration-none text-dark d-block">
+                            <div class="card h-100 border-0 shadow-sm product-card">
+                                <img src="<%= relatedProduct.images[0] %>" class="card-img-top" alt="<%= relatedProduct.name %>" style="height: 150px; object-fit: cover;">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title text-truncate mb-1 fw-semibold"><%= relatedProduct.name %></h6>
+                                    <div class="price-section d-flex align-items-center">
+                                        <h5 class="text-success fw-bold mb-0 me-2" style="font-size: 1.1rem;">₹<%= relatedProduct.price %></h5>
+                                        <% if (relatedProduct.originalPrice) { %>
+                                            <small class="text-muted"><del>₹<%= relatedProduct.originalPrice %></del></small>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<div class="floating-action-bar">
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="me-3 text-start">
+            <h5 class="text-success fw-bolder mb-0">₹<%= product.price %></h5>
+            <% if (product.originalPrice) { %>
+                <small class="text-muted"><del>₹<%= product.originalPrice %></del></small>
+            <% } %>
+        </div>
+        <button id="mobile-add-to-cart-btn" class="btn btn-quick-add btn-lg flex-grow-1" onclick="addToCart()">
+            <i class="bi bi-bag-plus"></i> Add to Cart
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="lightbox-modal" tabindex="-1" aria-labelledby="lightboxModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img src="" class="img-fluid" alt="Product Image" id="lightbox-image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeMainImage(imageSrc, clickedThumbnail) {
+    const mainImage = document.getElementById('main-image');
+    mainImage.src = imageSrc;
+
+    // Update active class for thumbnails
+    document.querySelectorAll('.thumbnail-img').forEach(img => img.classList.remove('active'));
+    clickedThumbnail.classList.add('active');
+
+    // Update lightbox image source as well
+    document.getElementById('lightbox-image').src = imageSrc;
+}
+
+function changeQuantity(change) {
+    const quantityInput = document.getElementById('quantity');
+    const currentQuantity = parseInt(quantityInput.value);
+    const maxQuantity = parseInt(quantityInput.max) || 5;
+    const minQuantity = parseInt(quantityInput.min) || 1;
+
+    const newQuantity = Math.max(minQuantity, Math.min(maxQuantity, currentQuantity + change));
+    quantityInput.value = newQuantity;
+}
+
+function getSelectedProductDetails() {
+    const sizeInput = document.querySelector('input[name="size"]:checked');
+    const colorInput = document.querySelector('input[name="color"]:checked');
+
+    return {
+        size: sizeInput ? sizeInput.value : null,
+        color: colorInput ? colorInput.value : null,
+        quantity: document.getElementById('quantity').value
+    };
+}
+
+function addToCart() {
+    const details = getSelectedProductDetails();
+    
+    if (document.querySelector('input[name="size"]') && !details.size) {
+        alert('Please select a size.');
+        return;
+    }
+    if (document.querySelector('input[name="color"]') && !details.color) {
+        alert('Please select a color.');
+        return;
+    }
+
+    const data = {
+        productId: '<%= product._id %>',
+        size: details.size,
+        color: details.color,
+        quantity: details.quantity
+    };
+    
+    const buttons = document.querySelectorAll('.btn-quick-add');
+    
+    buttons.forEach(btn => {
+        btn.setAttribute('disabled', 'true');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Adding...';
+    });
+
+
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        buttons.forEach(btn => {
+            btn.removeAttribute('disabled');
+        });
+
+        if (result.success) {
+            buttons.forEach(btn => {
+                const originalText = '<i class="bi bi-bag-plus"></i> Add to Cart';
+                
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> Added to Cart!';
+                btn.classList.remove('btn-quick-add');
+                btn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    const restoredText = btn.id === 'desktop-add-to-cart-btn' ? '<i class="bi bi-bag-plus"></i> Add to Cart - **Get it in 2 Hrs!**' : originalText;
+                    btn.innerHTML = restoredText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-quick-add');
+                }, 2000);
+            });
+
+            const cartBadge = document.querySelector('.navbar .badge, .bottom-nav .badge'); 
+            if (cartBadge) {
+                cartBadge.textContent = result.cartCount;
+            }
+            
+        } else {
+            alert('Error adding to cart: ' + result.error);
+            buttons.forEach(btn => {
+                 btn.innerHTML = '<i class="bi bi-x-circle"></i> Try Again';
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding to cart');
+        
+        buttons.forEach(btn => {
+             btn.removeAttribute('disabled');
+             const restoredText = btn.id === 'desktop-add-to-cart-btn' ? '<i class="bi bi-bag-plus"></i> Add to Cart - **Get it in 2 Hrs!**' : '<i class="bi bi-bag-plus"></i> Add to Cart';
+             btn.innerHTML = restoredText;
+        });
+    });
+}
+
+// Initialize lightbox on modal show
+document.addEventListener('DOMContentLoaded', () => {
+    const mainImage = document.getElementById('main-image');
+    const lightboxImage = document.getElementById('lightbox-image');
+
+    // Set initial lightbox image to the main image
+    if (mainImage && lightboxImage) {
+        lightboxImage.src = mainImage.src;
+    }
+
+    // Update lightbox image when the main image changes (e.g., via thumbnails)
+    mainImage.addEventListener('click', () => {
+        lightboxImage.src = mainImage.src;
+    });
+
+    // Handle thumbnail active state
+    document.querySelectorAll('.thumbnail-img').forEach(img => {
+        img.addEventListener('click', function() {
+            document.querySelectorAll('.thumbnail-img').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+
+</script>

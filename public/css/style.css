@@ -1,0 +1,284 @@
+/* Karyo Clothing Store - Custom Styles */
+
+:root {
+  --primary-color: #1e40af;
+  --success-color: #10b981;
+  --warning-color: #f97316;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --light-bg: #f8fafc;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+/* Trust Bar Styles */
+.trust-bar {
+  font-size: 0.875rem;
+  background: linear-gradient(135deg, var(--success-color), #059669);
+}
+
+/* Navigation Enhancements */
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--primary-color) !important;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, var(--primary-color), #1e3a8a);
+}
+
+.urgency-box {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* Product Cards */
+.product-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.product-card img {
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Price Styling */
+.price-section h5, .price-section h4, .price-section h2 {
+  margin: 0;
+}
+
+/* Trust Indicators */
+.trust-metric h3 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.trust-indicators {
+  background: var(--light-bg);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+/* Button Enhancements */
+.btn {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-success {
+  background: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-warning {
+  background: var(--warning-color);
+  border-color: var(--warning-color);
+  color: white;
+}
+
+/* Form Styling */
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(30, 64, 175, 0.25);
+}
+
+/* Stars Rating */
+.stars {
+  letter-spacing: 2px;
+}
+
+/* Badge Enhancements */
+.badge {
+  font-weight: 500;
+}
+
+/* Social Proof Cards */
+.card {
+  border-radius: 12px;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Responsive Image Handling */
+.img-fluid {
+  border-radius: 8px;
+}
+
+/* Footer Enhancements */
+footer {
+  background: linear-gradient(135deg, #1f2937, #111827) !important;
+}
+
+.trust-badges .badge {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* Contact Page Styling */
+.contact-info p {
+  margin-bottom: 0.5rem;
+}
+
+.contact-info i {
+  width: 20px;
+}
+
+/* Cart & Checkout */
+.input-group .form-control {
+  border-left: 0;
+  border-right: 0;
+}
+
+.input-group .btn {
+  border-radius: 0;
+}
+
+.input-group .btn:first-child {
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+
+.input-group .btn:last-child {
+  border-top-right-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+/* Admin Dashboard */
+.fs-1 {
+  font-size: 2.5rem !important;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease;
+}
+
+/* Utility Classes */
+.shadow-sm {
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.shadow-md {
+  box-shadow: var(--shadow-md) !important;
+}
+
+.bg-light {
+  background-color: var(--light-bg) !important;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+  
+  .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  .trust-bar .row {
+    font-size: 0.75rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+}
+
+/* Loading States */
+.btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.5rem;
+  margin-left: -0.5rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Product Detail Enhancements */
+.thumbnail-img {
+  transition: all 0.3s ease;
+}
+
+.thumbnail-img:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+/* Accordion Styling */
+.accordion-button:not(.collapsed) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(30, 64, 175, 0.25);
+}

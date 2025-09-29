@@ -1,0 +1,303 @@
+<% layout('layout') %>
+<style>
+    /* Mobile-First Custom Styles */
+    :root {
+        --karyo-primary: #007bff; /* Primary Blue */
+        --karyo-speed: #28a745; 
+        --karyo-urgency: #ffc107; 
+    }
+
+    /* --- Universal Compactness --- */
+    section {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
+    /* --- 1. HERO SECTION STYLES --- */
+    .hero-section {
+        background: var(--karyo-primary);
+        color: white;
+        padding-top: 1.5rem !important; 
+        padding-bottom: 1.5rem !important;
+    }
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+    @media (min-width: 768px) {
+        .hero-section h1 {
+            font-size: 2.5rem; /* Larger title for desktop */
+        }
+    }
+    .hero-section .lead {
+        font-size: 0.95rem;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Urgency Box - Condensed */
+    .urgency-box {
+        background-color: var(--karyo-urgency) !important;
+        color: #343a40 !important;
+        border-left: 4px solid #dc3545; 
+        padding: 0.75rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .urgency-box h5 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem !important;
+    }
+    #countdown-timer {
+        font-size: 1.2rem;
+        padding: 0 0.4rem;
+        background: #343a40;
+        color: var(--karyo-speed);
+        border-radius: 4px;
+    }
+    .urgency-box small {
+        font-size: 0.75rem;
+    }
+
+    /* --- 2. TRUST/INDICATOR STYLES --- */
+    .trust-metric h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0 !important;
+        color: var(--karyo-speed) !important;
+    }
+    .trust-metric small {
+        font-size: 0.75rem;
+    }
+    
+    /* --- 3. PRODUCT CARD STYLES (Responsive) --- */
+    .product-card {
+        border-radius: 0.5rem;
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+    }
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+    .product-card .card-img-top {
+        height: 180px; 
+        object-fit: cover;
+    }
+    .product-card .card-body {
+        padding: 0.75rem !important;
+    }
+    .product-card h6 {
+        font-size: 0.9rem;
+    }
+    .product-card h5 {
+        font-size: 1.1rem;
+    }
+    .product-card .badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.6em;
+    }
+    
+    /* --- 4. QUICK ACTION BUTTONS (Product Card CTA) --- */
+    .btn-quick-success {
+        background-color: var(--karyo-speed);
+        border-color: var(--karyo-speed);
+        color: white;
+        font-weight: bold;
+    }
+    .btn-quick-success:hover {
+        background-color: #1e7e34;
+        border-color: #1e7e34;
+        color: white;
+    }
+</style>
+
+<section>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold" style="font-size: 1.5rem;">🔥 Trending Now</h2>
+            <p class="text-danger fw-bold mb-0" style="font-size: 0.85rem;">Stock is running low. Grab yours quick!</p>
+        </div>
+        
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            <% featuredProducts.slice(0, 8).forEach(product => { %>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm product-card" onclick="window.location.href='/products/<%= product._id %>'">
+                        <div class="position-relative">
+                            <img src="<%= product.images[0] %>" class="card-img-top" alt="<%= product.name %>">
+                            <div class="position-absolute top-0 end-0 m-1">
+                                <span class="badge bg-danger">
+                                    -<%= product.discount %>%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h6 class="card-title fw-semibold text-truncate mb-1"><%= product.name %></h6>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="text-success fw-bolder mb-0">₹<%= product.price %></h5>
+                                <button class="btn btn-sm btn-primary add-to-cart-btn" 
+                                        data-product-id="<%= product._id %>"
+                                        style="font-size: 0.7rem;" 
+                                        onclick="event.stopPropagation(); homepageAddToCart(this, '<%= product._id %>')">
+                                    ADD
+                                </button>
+                            </div>
+                            <% if (product.originalPrice) { %>
+                                <small class="text-muted"><del>₹<%= product.originalPrice %></del></small>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <div class="text-center mt-4">
+            <a href="/shop" class="btn btn-outline-primary btn-sm">View All Trending</a>
+        </div>
+    </div>
+</section>
+<hr>
+
+<section class="bg-light">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold" style="font-size: 1.5rem;">✨ Fresh Collection</h2>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Be the first to grab these styles!</p>
+        </div>
+        
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            <% newArrivals.slice(0, 4).forEach(product => { %>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm product-card" onclick="window.location.href='/products/<%= product._id %>'">
+                        <div class="position-relative">
+                            <img src="<%= product.images[0] %>" class="card-img-top" alt="<%= product.name %>" style="height: 120px; object-fit: cover;">
+                            <div class="position-absolute top-0 start-0 m-1">
+                                <span class="badge bg-primary" style="font-size: 0.65rem;">NEW</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body py-2">
+                            <h6 class="card-title fw-semibold text-truncate mb-1" style="font-size: 0.8rem;"><%= product.name %></h6>
+                            <h6 class="text-success fw-bold mb-0" style="font-size: 0.9rem;">₹<%= product.price %></h6>
+                             <button class="btn btn-sm btn-primary add-to-cart-btn mt-2 w-100" 
+                                    data-product-id="<%= product._id %>"
+                                    style="font-size: 0.7rem;" 
+                                    onclick="event.stopPropagation(); homepageAddToCart(this, '<%= product._id %>')">
+                                ADD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/shop?sort=newest" class="btn btn-primary btn-sm">
+                <i class="bi bi-collection"></i> View All
+            </a>
+        </div>
+    </div>
+</section>
+<hr>
+
+<section class="py-4 bg-dark text-white text-center">
+    <div class="container">
+        <h3 class="fw-bold mb-2" style="font-size: 1.5rem;">🎁 Get 10% OFF Your Quick Order!</h3>
+        <p class="text-light mb-3" style="font-size: 0.9rem;">Subscribe for instant deals.</p>
+        
+        <form class="d-flex flex-column gap-2 mx-auto" style="max-width: 400px;">
+            <input type="email" class="form-control" placeholder="Enter your email" required>
+            <button class="btn btn-quick-success fw-bold" type="submit">
+                <i class="bi bi-gift-fill me-1"></i> CLAIM DISCOUNT
+            </button>
+        </form>
+    </div>
+</section>
+
+<script>
+    // --- URGENCY TIMER LOGIC ---
+    const saleEndTime = new Date().getTime() + (24 * 60 * 60 * 1000); 
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = saleEndTime - now;
+        const countdownElement = document.getElementById('countdown-timer');
+        
+        if (!countdownElement) return;
+
+        if (distance < 0) {
+            clearInterval(timerInterval);
+            countdownElement.innerHTML = "EXPIRED";
+            return;
+        }
+
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        countdownElement.innerHTML = 
+            String(hours).padStart(2, '0') + ":" + 
+            String(minutes).padStart(2, '0') + ":" + 
+            String(seconds).padStart(2, '0');
+    }
+
+    const timerInterval = setInterval(updateCountdown, 1000);
+    updateCountdown(); 
+
+    // --- CART LOGIC FOR HOMEPAGE CARDS ---
+    function homepageAddToCart(buttonElement, productId) {
+        
+        // 1. Visually lock the button immediately
+        buttonElement.setAttribute('disabled', 'true');
+        const originalText = buttonElement.innerHTML;
+        buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+        const data = {
+            productId: productId,
+            size: null, // Simple add to cart from grid assumes no size/color selection
+            color: null,
+            quantity: 1
+        };
+
+        fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            buttonElement.removeAttribute('disabled');
+
+            if (result.success) {
+                // Change button style and text to success
+                buttonElement.innerHTML = '<i class="bi bi-check-circle"></i> ADDED';
+                buttonElement.classList.remove('btn-primary');
+                buttonElement.classList.add('btn-success');
+                
+                // Update cart count badge in the layout
+                const cartBadge = document.querySelector('.navbar .badge, .bottom-nav .badge'); 
+                if (cartBadge) {
+                    cartBadge.textContent = result.cartCount;
+                }
+                
+                // Reset button after 1.5 seconds
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalText;
+                    buttonElement.classList.remove('btn-success');
+                    buttonElement.classList.add('btn-primary');
+                }, 1500);
+                
+            } else {
+                alert('Error adding to cart: ' + result.error);
+                buttonElement.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding to cart');
+            
+            // Reset button on failure
+            buttonElement.removeAttribute('disabled');
+            buttonElement.innerHTML = originalText;
+        });
+    }
+</script>

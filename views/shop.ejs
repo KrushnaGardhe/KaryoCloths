@@ -1,0 +1,239 @@
+<% layout('layout') %>
+<style>
+    /* Custom styles for a Blinkit/Quick-Commerce look */
+    /* REMOVED: .shop-header-sticky to make the bar non-sticky */
+    .shop-header {
+        /* Standard flow header, just to keep structure */
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 1.5rem !important; 
+    }
+
+    .product-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 0.75rem; /* Rounded corners */
+        overflow: hidden;
+        /* Make the whole card clickable visually */
+        cursor: pointer; 
+    }
+
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .card-img-top {
+        height: 180px; /* Smaller image for compactness */
+        object-fit: contain; /* Show the whole product, not cover */
+        padding: 10px; /* Give it some breathing room */
+        background-color: #f8f9fa; /* Light background for images */
+    }
+
+    .card-body {
+        padding: 0.75rem; /* Compact padding */
+    }
+    
+    .card-footer {
+        padding: 0.75rem;
+    }
+
+    .price-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0 !important; 
+    }
+
+    .price-section .current-price {
+        font-size: 1.15rem; 
+        color: #28a745; 
+    }
+
+    /* Dominant Add button styling */
+    .btn-quick-add {
+        background-color: #28a745; 
+        border-color: #28a745;
+        font-weight: bold;
+        padding: 0.25rem 0.5rem; /* Smaller button */
+        z-index: 2; /* Ensure button is on top of card click listener */
+        transition: all 0.2s;
+    }
+    .btn-quick-add.btn-success {
+        background-color: #1c7430;
+        border-color: #1c7430;
+    }
+</style>
+
+<div class="container py-3">
+    <div class="row shop-header">
+        <div class="col-md-5 d-flex align-items-center">
+            <h3 class="fw-bold mb-0 me-3">Shop Groceries 🛒</h3>
+            <span class="text-danger small fw-bold">🚀 10 Min Delivery!</span>
+        </div>
+        <div class="col-md-7">
+            <div class="d-flex justify-content-md-end gap-2">
+                <select class="form-select form-select-sm" style="width: auto; max-width: 50%;" onchange="filterByCategory(this.value)">
+                    <option value="all" <%= currentCategory === 'all' ? 'selected' : '' %>>All Categories</option>
+                    <% categories.forEach(category => { %>
+                        <option value="<%= category %>" <%= currentCategory === category ? 'selected' : '' %>>
+                            <%= category %>
+                        </option>
+                    <% }); %>
+                </select>
+                
+                <select class="form-select form-select-sm" style="width: auto; max-width: 50%;" onchange="sortProducts(this.value)">
+                    <option value="newest" <%= currentSort === 'newest' ? 'selected' : '' %>>Newest First</option>
+                    <option value="price-low" <%= currentSort === 'price-low' ? 'selected' : '' %>>Price: Low to High</option>
+                    <option value="price-high" <%= currentSort === 'price-high' ? 'selected' : '' %>>Price: High to Low</option>
+                    <option value="rating" <%= currentSort === 'rating' ? 'selected' : '' %>>Highest Rated</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" id="products-grid">
+        <% products.forEach(product => { %>
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
+                <div 
+                    class="card h-100 border-light shadow-sm product-card"
+                    onclick="window.location.href='/products/<%= product._id %>'"
+                >
+                    <div class="position-relative">
+                        <img src="<%= product.images[0] %>" class="card-img-top" alt="<%= product.name %>">
+                        
+                        <% if (product.discount > 0) { %>
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <span class="badge rounded-pill bg-danger"><%= product.discount %>% OFF</span>
+                            </div>
+                        <% } %>
+
+                        <% const stockLevel = Math.floor(Math.random() * 20) + 5; %>
+                        <% if (stockLevel < 1) { %>
+                            <div class="position-absolute bottom-0 w-100 p-2 text-center" style="background-color: rgba(255, 255, 255, 0.8);">
+                                <span class="text-danger fw-bold small">OUT OF STOCK</span>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h6 class="card-title mb-1 small fw-semibold text-truncate" title="<%= product.name %>">
+                                <%= product.name %>
+                            </h6>
+                            <p class="text-muted small mb-2">500g</p> 
+                        </div>
+
+                        <div class="price-section">
+                            <h6 class="current-price fw-bold mb-0">
+                                ₹<%= product.price %>
+                            </h6>
+                            
+                            <% if (stockLevel >= 1) { %>
+                                <button 
+                                    class="btn btn-quick-add btn-sm"
+                                    data-product-id="<%= product._id %>"
+                                    onclick="event.stopPropagation(); quickAddProduct(this, '<%= product._id %>')"
+                                >
+                                    ADD <i class="bi bi-plus-lg"></i>
+                                </button>
+                            <% } else { %>
+                                <button class="btn btn-secondary btn-sm disabled">
+                                    Notify
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+
+    <% if (products.length === 0) { %>
+        <div class="text-center py-5">
+            <i class="bi bi-search display-4 text-muted"></i>
+            <h3 class="mt-3">Sorry, we're out of stock!</h3>
+            <p class="text-muted">Try adjusting your filters or check back in a few minutes.</p>
+            <a href="/shop" class="btn btn-primary">View All Products</a>
+        </div>
+    <% } %>
+</div>
+
+<script>
+// --- CORE ADD TO CART LOGIC ---
+function quickAddProduct(buttonElement, productId) {
+    // 1. Visually lock the button immediately
+    buttonElement.setAttribute('disabled', 'true');
+    const originalText = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+    const data = {
+        productId: productId,
+        // Assuming simple add: quantity 1, no size/color selection from the grid view
+        quantity: 1
+    };
+
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        buttonElement.removeAttribute('disabled');
+
+        if (result.success) {
+            // Change button style and text to success
+            buttonElement.innerHTML = '<i class="bi bi-check-circle"></i> ADDED';
+            buttonElement.classList.remove('btn-quick-add');
+            buttonElement.classList.add('btn-success');
+            
+            // Update cart count badge in the layout
+            const cartBadge = document.querySelector('.navbar .badge, .bottom-nav .badge'); 
+            if (cartBadge) {
+                cartBadge.textContent = result.cartCount;
+            }
+            
+            // Reset button after 1.5 seconds
+            setTimeout(() => {
+                buttonElement.innerHTML = originalText;
+                buttonElement.classList.remove('btn-success');
+                buttonElement.classList.add('btn-quick-add');
+            }, 1500);
+            
+        } else {
+            alert('Error adding to cart: ' + result.error);
+            buttonElement.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding to cart');
+        
+        // Reset button on failure
+        buttonElement.removeAttribute('disabled');
+        buttonElement.innerHTML = originalText;
+    });
+}
+
+// --- FILTER/SORT LOGIC ---
+function filterByCategory(category) {
+    const currentSort = '<%= currentSort %>';
+    if (category === 'all') {
+        window.location.href = '/shop?sort=' + currentSort;
+    } else {
+        window.location.href = '/shop?category=' + encodeURIComponent(category) + '&sort=' + currentSort;
+    }
+}
+
+function sortProducts(sort) {
+    const currentCategory = '<%= currentCategory %>';
+    let url = '/shop?sort=' + sort;
+    if (currentCategory !== 'all') {
+        url += '&category=' + encodeURIComponent(currentCategory);
+    }
+    window.location.href = url;
+}
+</script>
