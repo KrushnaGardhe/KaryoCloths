@@ -45,7 +45,6 @@ const cartRoutes = require('./routes/cart');
 app.use('/', indexRoutes);
 app.use('/products', productRoutes);
 app.use('/cart', cartRoutes);
-app.use('/admin', adminRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
