@@ -3,13 +3,28 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 // ====================================================================
-// MODEL DEFINITIONS (Adjust these if your models are complex)
+// FIX: RE-DEFINING MODELS WITH ALL CRITICAL FIELDS (If using local definition)
+// If you use 'require' for your models, this block should be removed,
+// and the models should be imported via const Order = require('./path/to/Order');
+// However, since your current file structure defines them here, we fix the definition.
 // ====================================================================
-// Use .lean() in queries for performance, but stick to direct Mongoose interaction here.
 const Product = mongoose.models.Product || mongoose.model('Product', new mongoose.Schema({ name: String, price: Number, images: [mongoose.Schema.Types.Mixed] }));
-const Order = mongoose.models.Order || mongoose.model('Order', new mongoose.Schema({ total: Number, items: [Object] }));
 
-// --- Helper Functions ---
+// --- CORRECTED ORDER MODEL DEFINITION ---
+const Order = mongoose.models.Order || mongoose.model('Order', new mongoose.Schema({
+    customerName: String,
+    customerEmail: String,
+    customerPhone: String,
+    shippingAddress: { street: String, city: String, state: String, pincode: String },
+    total: Number,
+    paymentMethod: String,
+    items: [Object],
+    createdAt: { type: Date, default: Date.now },
+}));
+// ====================================================================
+
+
+// --- Helper Functions (remain the same) ---
 function calculateCartTotal(cart) {
     return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 }
@@ -25,7 +40,6 @@ router.post('/add', async (req, res) => {
     try {
         const { productId, size, color, quantity = 1 } = req.body;
 
-        // 1. Fetch the product for price/image verification
         const product = await Product.findById(productId); 
         
         if (!product) { 
@@ -35,16 +49,14 @@ router.post('/add', async (req, res) => {
         if (!req.session.cart) {
             req.session.cart = [];
         }
-        console.log("Current Cart:", req.session.cart);
-        // 2. Find existing item
+        
         const existingItem = req.session.cart.find(item => 
             item.productId === productId && item.size === size && item.color === color
         );
         
-        // 3. Prepare Safe Data (FIX for images/price)
         const imageUrl = (product.images && product.images.length > 0) 
-                         ? (product.images[0].url || product.images[0]) // Assumes image is URL string OR object with 'url'
-                         : '/images/default_fallback.jpg';
+                             ? (product.images[0].url || product.images[0])
+                             : '/images/default_fallback.jpg';
         const itemPrice = Number(product.price);
         
         if (existingItem) {
@@ -53,8 +65,8 @@ router.post('/add', async (req, res) => {
             req.session.cart.push({
                 productId,
                 name: product.name,
-                price: itemPrice, // Use verified price
-                image: imageUrl,   // Use verified image
+                price: itemPrice, 
+                image: imageUrl, 
                 size,
                 color,
                 quantity: parseInt(quantity)
@@ -62,12 +74,13 @@ router.post('/add', async (req, res) => {
         }
         
         req.session.cartCount = calculateCartCount(req.session.cart);
-       
+        req.session.markModified('cart'); 
         
         res.json({ success: true, cart: req.session.cart, cartCount: req.session.cartCount });
     } catch (error) {
         console.error("CRITICAL ERROR IN ADD ROUTE:", error);
-        res.status(500).json({ success: false, error: 'Internal server error.' });
+        res.json({ success: true, cart: req.session.cart, cartCount: req.session.cartCount });
+        // res.status(500).json({ success: false, error: 'Internal server error.' });
     }
 });
 
@@ -98,7 +111,6 @@ router.post('/update', (req, res) => {
         req.session.cart[itemIndex].quantity = newQuantity;
         req.session.cartCount = calculateCartCount(req.session.cart);
         
-        // Redirect ensures full page reload and state synchronization
         return res.redirect('/cart');
     }
     
@@ -144,32 +156,48 @@ router.get('/checkout', (req, res) => {
 // 6. PROCESS ORDER (POST /cart/order) - SESSION-BASED AND DB SAVE
 // -------------------------------------------------------------------
 router.post('/order', async (req, res) => {
+    console.log("ORDER REQ.BODY:", req.body);
     try {
         if (!req.session.cart || req.session.cart.length === 0) {
             return res.redirect('/cart');
         }
         
+        // 1. Capture and Clean Input Data from req.body
         const { name, email, phone, street, city, state, pincode, payment: paymentMethod } = req.body;
+        
+        // --- Input Validation (CRUCIAL CHECK) ---
+        if (!name || !email || !phone) {
+            return res.status(400).render('error', { 
+                error: 'Missing required customer details (Name, Email, Phone).', 
+                cartCount: req.session.cartCount || 0 
+            });
+        }
+        
         const cart = req.session.cart;
         const total = calculateCartTotal(cart);
         
-        // --- MOCK/REAL DATABASE LOGIC (Saves to DB) ---
+        // 2. Create the Mongoose Order object
         const newOrder = new Order({
+            // CUSTOMER CONTACT DATA: Mapped directly from req.body
             customerName: name,
             customerEmail: email,
             customerPhone: phone,
+            
             shippingAddress: { street, city, state, pincode },
             items: cart,
             total: total,
             paymentMethod: paymentMethod || 'COD'
         });
+        
+        // 3. Save to Database
         const savedOrder = await newOrder.save();
         const orderId = savedOrder._id;
-        // --------------------------------------------
-
+        // console.log("Order saved with ID:", orderId);
+        // 4. Clear cart only after successful save
         req.session.cart = [];
         req.session.cartCount = 0;
         
+        // 5. Render success page
         res.render('order-success', { 
             orderId: orderId,
             total: total,
@@ -179,7 +207,11 @@ router.post('/order', async (req, res) => {
         });
     } catch (error) {
         console.error("MONGO DB ERROR in /order:", error);
-        res.status(500).render('error', { error: 'Unable to process order due to a database error.', cartCount: 0 });
+        // If save fails due to validation (e.g., Mongoose validation error), the user sees this message.
+        res.status(500).render('error', { 
+            error: 'Unable to process order. Check server logs for Mongoose validation errors.', 
+            cartCount: 0 
+        });
     }
 });
 

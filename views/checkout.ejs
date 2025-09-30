@@ -1,7 +1,7 @@
 <% layout('layout') %>
 <% 
     // --- CALCULATIONS MOVED TO TOP ---
-    // These variables must be calculated and defined before their first use below.
+    // These variables are calculated before page rendering.
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryCost = total >= 999 ? 0 : 99;
     const grandTotal = total + deliveryCost;
@@ -100,6 +100,7 @@
                 </div>
             </div>
 
+            <!-- FORM: Correctly points to the POST /cart/order route -->
             <form method="POST" action="/cart/order" id="checkout-form">
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-light">
@@ -161,13 +162,34 @@
                             </label>
                         </div>
                         
-                        
+                         <!-- UPI -->
+                        <div class="form-check mb-3 border-bottom pb-2">
+                            <input class="form-check-input" type="radio" name="payment" id="upi" value="upi">
+                            <label class="form-check-label" for="upi">
+                                <i class="bi bi-phone text-primary me-2 fs-5"></i>
+                                <div>
+                                    UPI Payment
+                                    <small class="text-muted d-block">Google Pay, PhonePe, Paytm</small>
+                                </div>
+                            </label>
+                        </div>
+
+                         <!-- Card -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment" id="card" value="card">
+                            <label class="form-check-label" for="card">
+                                <i class="bi bi-credit-card text-info me-2 fs-5"></i>
+                                <div>
+                                    Credit/Debit Card
+                                    <small class="text-muted d-block">Visa, Mastercard, RuPay accepted</small>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Terms & Desktop Actions -->
                 <div class="mb-4">
-                    <!-- FIX: Simplified label structure to encourage single line flow on mobile -->
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" id="terms" required>
                         <label class="form-check-label small" for="terms">
@@ -183,6 +205,7 @@
                         <a href="/cart" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> Back to Cart
                         </a>
+                        <!-- Button submits the form -->
                         <button type="submit" class="btn btn-success btn-lg btn-place-order flex-fill">
                             <i class="bi bi-check-circle"></i> Place Order (₹<%= grandTotal %>)
                         </button>
@@ -199,7 +222,6 @@
                         <h5 class="mb-0">Order Summary</h5>
                     </div>
                     <div class="card-body">
-                        <!-- Item List Preview -->
                         <% cart.forEach(item => { %>
                             <div class="d-flex justify-content-between mb-2 small">
                                 <div class="text-truncate" style="max-width: 70%;">
@@ -253,6 +275,7 @@
         <h5 class="text-success fw-bold mb-0">₹<%= grandTotal %></h5>
     </div>
     
+    <!-- Button submits the form -->
     <button type="submit" form="checkout-form" class="btn btn-success btn-lg btn-place-order flex-fill">
         <i class="bi bi-check-circle"></i> Place Order
     </button>
