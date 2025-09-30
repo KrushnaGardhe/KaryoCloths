@@ -282,7 +282,7 @@
                         </div>
                         <div class="col-6 col-md-3">
                             <i class="bi bi-lightning-fill display-6 text-success"></i>
-                            <h6 class="mt-2 fw-bold">2-4 Hr Delivery</h6>
+                            <h6 class="mt-2 fw-bold">2-4 Days Delivery</h6>
                             <small class="text-muted">Same day in major cities</small>
                         </div>
                         <div class="col-6 col-md-3">
@@ -312,6 +312,7 @@
                                 <img src="<%= relatedProduct.images[0] %>" class="card-img-top" alt="<%= relatedProduct.name %>" style="height: 150px; object-fit: cover;">
                                 <div class="card-body p-3">
                                     <h6 class="card-title text-truncate mb-1 fw-semibold"><%= relatedProduct.name %></h6>
+                                    <p class="text-muted small me-3 text-truncate "><%= relatedProduct.description %></p>
                                     <div class="price-section d-flex align-items-center">
                                         <h5 class="text-success fw-bold mb-0 me-2" style="font-size: 1.1rem;">₹<%= relatedProduct.price %></h5>
                                         <% if (relatedProduct.originalPrice) { %>
