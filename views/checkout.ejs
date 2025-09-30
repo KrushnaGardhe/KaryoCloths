@@ -3,7 +3,7 @@
     // --- CALCULATIONS MOVED TO TOP ---
     // These variables are calculated before page rendering.
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryCost = total >= 999 ? 0 : 99;
+    const deliveryCost = total >= 200 ? 0 : 99;
     const grandTotal = total + deliveryCost;
     const savings = Math.floor(total * 0.3); // Placeholder savings
 %>
@@ -157,7 +157,7 @@
                                 <i class="bi bi-cash text-success me-2 fs-5"></i>
                                 <div>
                                     Cash on Delivery
-                                    <small class="text-muted d-block">Pay when your order arrives (2-hour delivery supported)</small>
+                                    <small class="text-muted d-block">Pay when your order arrives (2-4 Days delivery supported)</small>
                                 </div>
                             </label>
                         </div>
@@ -184,7 +184,7 @@
                         </a>
                         <!-- Button submits the form -->
                         <button type="submit" class="btn btn-success btn-lg btn-place-order flex-fill">
-                            <i class="bi bi-check-circle"></i> Place Order (₹<%= grandTotal %>)
+                            <i class="bi bi-check-circle"></i> Place Order (₹<%= grandTotal%>)
                         </button>
                     </div>
                 </div>
