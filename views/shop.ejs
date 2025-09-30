@@ -120,17 +120,18 @@
                             <h6 class="card-title mb-1 small fw-semibold text-truncate" title="<%= product.name %>">
                                 <%= product.name %>
                             </h6>
-                            <p class="text-muted small mb-2">500g</p> 
+                            <p class="text-muted small me-3 text-truncate "><%= product.description %></p>
+                            
                         </div>
 
                         <div class="price-section">
-                            <h6 class="current-price fw-bold mb-0">
+                            <h6 class="current-price text-dark fw-bold mb-0">
                                 ₹<%= product.price %>
                             </h6>
                             
                             <% if (stockLevel >= 1) { %>
                                 <button 
-                                    class="btn btn-quick-add btn-sm"
+                                    class="btn btn-quick-add btn-sm border"
                                     data-product-id="<%= product._id %>"
                                     onclick="event.stopPropagation(); quickAddProduct(this, '<%= product._id %>')"
                                 >
