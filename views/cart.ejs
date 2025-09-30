@@ -215,7 +215,7 @@
                     <div class="card-body">
                         <% 
                             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                            const deliveryCost = total < 999 ? 99 : 0;
+                            const deliveryCost = total < 200 ? 99 : 0;
                             const grandTotal = total + deliveryCost;
                             const savings = Math.floor(total * 0.3);
                         %>
@@ -227,11 +227,11 @@
                             <span>Delivery</span>
                             <span class="<%= deliveryCost === 0 ? 'text-success' : 'text-dark' %>"><%= deliveryCost === 0 ? 'FREE' : '₹' + deliveryCost %></span>
                         </div>
-                        <% if (total < 999) { %>
+                        <% if (total < 200) { %>
                             <div class="alert alert-warning border-0 p-2 mb-3">
                                 <small>
                                     <i class="bi bi-info-circle"></i>
-                                    Add ₹<%= 999 - total %> more for FREE delivery!
+                                    Add ₹<%= 200 - total %> more for FREE delivery!
                                 </small>
                             </div>
                         <% } %>
@@ -269,7 +269,7 @@
 <% if (cart.length > 0) { %>
     <% 
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const deliveryCost = total < 999 ? 99 : 0;
+        const deliveryCost = total < 200 ? 99 : 0;
         const grandTotal = total + deliveryCost;
     %>
     <div class="sticky-checkout-bar" id="mobile-checkout-bar">
